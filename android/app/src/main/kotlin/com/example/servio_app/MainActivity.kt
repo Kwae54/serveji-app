@@ -1,4 +1,4 @@
-package com.example.servio_app
+package com.example.serveji_app
 
 import io.flutter.embedding.android.FlutterActivity
 

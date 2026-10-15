@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import 'dart:typed_data';
+
 import '../../../core/network/api_client.dart';
 import '../model/restaurant.dart';
 
@@ -71,5 +73,30 @@ class RestaurantRepository {
     );
 
     return Restaurant.fromJson(response.data['data']);
+  }
+
+  Future<Restaurant> uploadPaymentQR({
+    required String restaurantId,
+    required Uint8List bytes,
+    required String fileName,
+  }) async {
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: fileName),
+    });
+
+    final response = await ApiClient.dio.post(
+      '/restaurants/$restaurantId/payment-qr',
+      data: formData,
+    );
+
+    return Restaurant.fromJson(response.data['data'] as Map<String, dynamic>);
+  }
+
+  Future<Restaurant> deletePaymentQR({required String restaurantId}) async {
+    final response = await ApiClient.dio.delete(
+      '/restaurants/$restaurantId/payment-qr',
+    );
+
+    return Restaurant.fromJson(response.data['data'] as Map<String, dynamic>);
   }
 }

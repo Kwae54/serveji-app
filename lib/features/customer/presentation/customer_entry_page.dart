@@ -85,7 +85,7 @@ class _CustomerEntryPageState extends State<CustomerEntryPage> {
     final tableName = tableInfo?['tableName'];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Servio')),
+      appBar: AppBar(title: const Text('Serveji')),
 
       body: Center(
         child: Padding(

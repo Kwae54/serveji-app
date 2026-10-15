@@ -65,7 +65,7 @@ class DiningTablePage extends ConsumerWidget {
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
                           maxCrossAxisExtent: 300,
-                          mainAxisExtent: 240,
+                          mainAxisExtent: 300,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
                         ),
@@ -451,31 +451,42 @@ class _TableCard extends ConsumerWidget {
               title: Text('ย้ายโต๊ะ ${table.tableNo}'),
               content: SizedBox(
                 width: 420,
+                height: MediaQuery.of(context).size.height * 0.55,
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('เลือกโต๊ะปลายทาง'),
 
                     const SizedBox(height: 12),
 
-                    ...availableTables.map((targetTable) {
-                      return RadioListTile<String>(
-                        value: targetTable.id,
-                        groupValue: selectedTableId,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedTableId = value;
-                          });
-                        },
-                        title: Text('โต๊ะ ${targetTable.tableNo}'),
-                        subtitle:
-                            targetTable.tableName != null &&
-                                targetTable.tableName!.isNotEmpty
-                            ? Text(targetTable.tableName!)
-                            : null,
-                      );
-                    }),
+                    Expanded(
+                      child: Scrollbar(
+                        thumbVisibility: true,
+                        child: ListView.separated(
+                          itemCount: availableTables.length,
+                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final targetTable = availableTables[index];
+
+                            return RadioListTile<String>(
+                              value: targetTable.id,
+                              groupValue: selectedTableId,
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedTableId = value;
+                                });
+                              },
+                              title: Text('โต๊ะ ${targetTable.tableNo}'),
+                              subtitle:
+                                  targetTable.tableName != null &&
+                                      targetTable.tableName!.isNotEmpty
+                                  ? Text(targetTable.tableName!)
+                                  : null,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

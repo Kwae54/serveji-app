@@ -5,16 +5,16 @@ import 'features/auth/presentation/auth_gate.dart';
 import 'features/customer/presentation/customer_order_page.dart';
 
 void main() {
-  runApp(const ProviderScope(child: ServioApp()));
+  runApp(const ProviderScope(child: ServejiApp()));
 }
 
-class ServioApp extends StatelessWidget {
-  const ServioApp({super.key});
+class ServejiApp extends StatelessWidget {
+  const ServejiApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Servio',
+      title: 'Serveji',
 
       debugShowCheckedModeBanner: false,
 

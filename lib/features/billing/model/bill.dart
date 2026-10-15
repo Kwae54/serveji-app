@@ -1,10 +1,12 @@
 class BillItem {
+  final String id;
   final String menuItemName;
   final int unitPriceSatang;
   final int quantity;
   final int totalSatang;
 
   const BillItem({
+    required this.id,
     required this.menuItemName,
     required this.unitPriceSatang,
     required this.quantity,
@@ -13,6 +15,7 @@ class BillItem {
 
   factory BillItem.fromJson(Map<String, dynamic> json) {
     return BillItem(
+      id: json['id'] ?? '',
       menuItemName: json['menuItemName'] ?? '',
       unitPriceSatang: json['unitPriceSatang'] ?? 0,
       quantity: json['quantity'] ?? 0,
@@ -41,10 +44,10 @@ class BillDiscount {
   factory BillDiscount.fromJson(Map<String, dynamic> json) {
     return BillDiscount(
       id: json['id'] ?? '',
-      discountName: json['discountName'] ?? '',
-      discountType: json['discountType'] ?? '',
-      discountValue: json['discountValue'] ?? 0,
-      discountAmountSatang: json['discountAmountSatang'] ?? 0,
+      discountName: json['name'] ?? '',
+      discountType: json['type'] ?? '',
+      discountValue: json['value'] ?? 0,
+      discountAmountSatang: json['amountSatang'] ?? 0,
       promotionCode: json['promotionCode'],
     );
   }
@@ -61,6 +64,7 @@ class Bill {
   final int discountTotalSatang;
   final int totalSatang;
   final String restaurantName;
+  final String? paymentQrImageUrl;
 
   const Bill({
     required this.sessionId,
@@ -73,6 +77,7 @@ class Bill {
     required this.discountTotalSatang,
     required this.totalSatang,
     required this.restaurantName,
+    required this.paymentQrImageUrl,
   });
 
   factory Bill.fromJson(Map<String, dynamic> json) {
@@ -98,6 +103,7 @@ class Bill {
       discountTotalSatang: json['discountTotalSatang'] ?? 0,
       totalSatang: json['totalSatang'] ?? 0,
       restaurantName: json['restaurantName'] ?? '',
+      paymentQrImageUrl: json['paymentQrImageUrl'] as String?,
     );
   }
 }

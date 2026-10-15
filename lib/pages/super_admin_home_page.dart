@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/auth/presentation/auth_provider.dart';
 import '../features/user/presentation/user_management_page.dart';
 import '../features/restaurant/presentation/restaurant_management_page.dart';
+import '../features/admin/presentation/app_download_page.dart';
 
 class SuperAdminHomePage extends ConsumerWidget {
   const SuperAdminHomePage({super.key});
@@ -14,7 +15,7 @@ class SuperAdminHomePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Servio Admin'),
+        title: const Text('Serveji Admin'),
         actions: [
           IconButton(
             onPressed: () {
@@ -65,6 +66,19 @@ class SuperAdminHomePage extends ConsumerWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const RestaurantManagementPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _MenuCard(
+                  title: 'ดาวน์โหลดแอป',
+                  icon: Icons.android,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AppDownloadPage(),
                       ),
                     );
                   },

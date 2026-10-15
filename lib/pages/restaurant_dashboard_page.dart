@@ -5,6 +5,8 @@ import '../features/dining_table/presentation/dining_table_page.dart';
 import '../features/menu/presentation/menu_management_page.dart';
 import '../features/order/presentation/order_management_page.dart';
 import '../features/billing/presentation/billing_management_page.dart';
+import '../features/printer/presentation/printer_settings_page.dart';
+import '../features/sales_summary/presentation/sales_summary_page.dart';
 import '../core/config/app_config.dart';
 
 class RestaurantDashboardPage extends StatelessWidget {
@@ -121,6 +123,39 @@ class RestaurantDashboardPage extends StatelessWidget {
 
                           MaterialPageRoute(
                             builder: (_) => BillingManagementPage(
+                              restaurantId: restaurant.id,
+                              restaurantName: restaurant.name,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    _DashboardCard(
+                      width: cardWidth,
+                      title: 'ตั้งค่าเครื่องพิมพ์',
+                      subtitle: 'Bluetooth / เครื่องพิมพ์ใบเสร็จ',
+                      icon: Icons.print,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const PrinterSettingsPage(),
+                          ),
+                        );
+                      },
+                    ),
+
+                    _DashboardCard(
+                      width: cardWidth,
+                      title: 'สรุปยอดขาย',
+                      subtitle: 'รายวัน รายเดือน และรายปี',
+                      icon: Icons.bar_chart,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => SalesSummaryPage(
                               restaurantId: restaurant.id,
                               restaurantName: restaurant.name,
                             ),

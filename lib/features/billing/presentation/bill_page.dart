@@ -5,12 +5,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/bill.dart';
 import 'billing_provider.dart';
 import '../../../core/printing/thermal_print_service.dart';
+import '../data/billing_repository.dart';
 
 class BillPage extends ConsumerWidget {
+  final String restaurantId;
   final String sessionId;
   final String tableNo;
 
-  const BillPage({super.key, required this.sessionId, required this.tableNo});
+  const BillPage({
+    super.key,
+    required this.restaurantId,
+    required this.sessionId,
+    required this.tableNo,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,6 +34,7 @@ class BillPage extends ConsumerWidget {
         data: (bill) {
           return _BillContent(
             bill: bill,
+            restaurantId: restaurantId,
 
             repository: ref.read(billingRepositoryProvider),
 
@@ -42,23 +50,27 @@ class BillPage extends ConsumerWidget {
 
 class _BillContent extends StatelessWidget {
   final Bill bill;
-  final dynamic repository;
+  final String restaurantId;
+  final BillingRepository repository;
   final VoidCallback onRefresh;
 
   const _BillContent({
     required this.bill,
+    required this.restaurantId,
     required this.repository,
     required this.onRefresh,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bottomSafeArea = MediaQuery.of(context).viewPadding.bottom;
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 800),
 
         child: ListView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.fromLTRB(24, 24, 24, bottomSafeArea + 40),
 
           children: [
             Text(
@@ -72,17 +84,68 @@ class _BillContent extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            ...bill.items.map(
-              (item) => ListTile(
-                contentPadding: EdgeInsets.zero,
-
-                title: Text(item.menuItemName),
-
-                subtitle: Text(
-                  '${item.quantity} × ${_formatPrice(item.unitPriceSatang)}',
+            Row(
+              children: [
+                Text(
+                  'รายการอาหาร',
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
 
-                trailing: Text(_formatPrice(item.totalSatang)),
+                const Spacer(),
+
+                OutlinedButton.icon(
+                  onPressed: () {
+                    _showManualOrderDialog(context, repository);
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text('เพิ่มเมนูพิเศษ'),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            ...bill.items.map(
+              (item) => Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  title: Text(
+                    item.menuItemName,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+
+                  subtitle: Text(
+                    '${item.quantity} × '
+                    '${_formatPrice(item.unitPriceSatang)}',
+                  ),
+
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _formatPrice(item.totalSatang),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      IconButton(
+                        tooltip: 'ยกเลิกรายการ',
+                        onPressed: item.id.isEmpty
+                            ? null
+                            : () {
+                                _showCancelItemDialog(
+                                  context,
+                                  repository,
+                                  item,
+                                );
+                              },
+                        icon: const Icon(Icons.cancel_outlined),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
 
@@ -225,6 +288,318 @@ class _BillContent extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _showManualOrderDialog(
+    BuildContext context,
+    dynamic repository,
+  ) async {
+    final nameController = TextEditingController();
+    final quantityController = TextEditingController(text: '1');
+    final priceController = TextEditingController();
+    final noteController = TextEditingController();
+
+    bool loading = false;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('เพิ่มเมนูพิเศษ'),
+
+              content: SizedBox(
+                width: 450,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: nameController,
+                        enabled: !loading,
+                        decoration: const InputDecoration(
+                          labelText: 'ชื่อรายการ',
+                          hintText: 'เช่น ไข่เจียวหมูสับพิเศษ',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      TextField(
+                        controller: quantityController,
+                        enabled: !loading,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'จำนวน',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      TextField(
+                        controller: priceController,
+                        enabled: !loading,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: const InputDecoration(
+                          labelText: 'ราคาต่อหน่วย (บาท)',
+                          hintText: '120.00',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      TextField(
+                        controller: noteController,
+                        enabled: !loading,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          labelText: 'หมายเหตุถึงครัว',
+                          hintText: 'เช่น ไม่ใส่ต้นหอม',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              actions: [
+                TextButton(
+                  onPressed: loading
+                      ? null
+                      : () {
+                          Navigator.pop(dialogContext);
+                        },
+                  child: const Text('ยกเลิก'),
+                ),
+
+                FilledButton.icon(
+                  onPressed: loading
+                      ? null
+                      : () async {
+                          final name = nameController.text.trim();
+
+                          final quantity = int.tryParse(
+                            quantityController.text.trim(),
+                          );
+
+                          final price = _bahtToSatang(
+                            priceController.text.trim(),
+                          );
+
+                          if (name.isEmpty) {
+                            _showMessage(context, 'กรุณากรอกชื่อรายการ');
+                            return;
+                          }
+
+                          if (quantity == null || quantity <= 0) {
+                            _showMessage(context, 'จำนวนต้องมากกว่า 0');
+                            return;
+                          }
+
+                          if (price == null || price < 0) {
+                            _showMessage(context, 'กรุณากรอกราคาให้ถูกต้อง');
+                            return;
+                          }
+
+                          setState(() {
+                            loading = true;
+                          });
+
+                          try {
+                            await repository.createManualOrder(
+                              restaurantId: restaurantId,
+                              sessionId: bill.sessionId,
+                              name: name,
+                              quantity: quantity,
+                              unitPriceSatang: price,
+                              note: noteController.text,
+                            );
+
+                            onRefresh();
+
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
+                            }
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'เพิ่มเมนูพิเศษแล้ว '
+                                    'กรุณาส่งรายการให้ครัว',
+                                  ),
+                                ),
+                              );
+                            }
+                          } catch (error) {
+                            setState(() {
+                              loading = false;
+                            });
+
+                            if (!context.mounted) {
+                              return;
+                            }
+
+                            _showMessage(context, _errorMessage(error));
+                          }
+                        },
+                  icon: loading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.add),
+                  label: const Text('เพิ่มออเดอร์'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    nameController.dispose();
+    quantityController.dispose();
+    priceController.dispose();
+    noteController.dispose();
+  }
+
+  Future<void> _showCancelItemDialog(
+    BuildContext context,
+    dynamic repository,
+    BillItem item,
+  ) async {
+    final reasonController = TextEditingController();
+
+    bool loading = false;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('ยกเลิกรายการอาหาร'),
+
+              content: SizedBox(
+                width: 450,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.menuItemName,
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      '${item.quantity} × '
+                      '${_formatPrice(item.unitPriceSatang)}',
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    TextField(
+                      controller: reasonController,
+                      enabled: !loading,
+                      maxLines: 3,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        labelText: 'เหตุผลที่ยกเลิก',
+                        hintText: 'เช่น ลูกค้าไม่ได้รับอาหาร',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              actions: [
+                TextButton(
+                  onPressed: loading
+                      ? null
+                      : () {
+                          Navigator.pop(dialogContext);
+                        },
+                  child: const Text('ย้อนกลับ'),
+                ),
+
+                FilledButton(
+                  onPressed: loading
+                      ? null
+                      : () async {
+                          final reason = reasonController.text.trim();
+
+                          if (reason.isEmpty) {
+                            _showMessage(context, 'กรุณาระบุเหตุผล');
+                            return;
+                          }
+
+                          setState(() {
+                            loading = true;
+                          });
+
+                          try {
+                            await repository.cancelOrderItem(
+                              restaurantId: restaurantId,
+                              orderItemId: item.id,
+                              reason: reason,
+                            );
+
+                            onRefresh();
+
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
+                            }
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('ยกเลิกรายการแล้ว'),
+                                ),
+                              );
+                            }
+                          } catch (error) {
+                            setState(() {
+                              loading = false;
+                            });
+
+                            if (!context.mounted) {
+                              return;
+                            }
+
+                            _showMessage(context, _errorMessage(error));
+                          }
+                        },
+                  child: loading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('ยืนยันยกเลิก'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    reasonController.dispose();
   }
 
   Future<void> _showDiscountDialog(
@@ -608,4 +983,8 @@ String _errorMessage(Object error) {
   }
 
   return 'เกิดข้อผิดพลาด กรุณาลองใหม่';
+}
+
+void _showMessage(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 }

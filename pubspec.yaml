@@ -1,4 +1,4 @@
-name: servio_app
+name: serveji_app
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -41,7 +41,11 @@ dependencies:
   qr_flutter: ^4.1.0
   pdf: ^3.13.1
   printing: ^5.15.1
-
+  print_bluetooth_thermal: ^1.2.5
+  esc_pos_utils_plus: ^2.0.4
+  shared_preferences: ^2.5.6
+  image: ^4.10.1
+  url_launcher: ^6.3.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -90,7 +90,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     const SizedBox(height: 16),
 
                     Text(
-                      'Servio',
+                      'Serveji',
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
 

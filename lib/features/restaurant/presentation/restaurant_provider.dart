@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -82,6 +83,26 @@ class RestaurantNotifier extends AsyncNotifier<List<Restaurant>> {
       bytes: bytes,
       fileName: fileName,
     );
+
+    await refresh();
+  }
+
+  Future<void> uploadPaymentQR({
+    required String restaurantId,
+    required Uint8List bytes,
+    required String fileName,
+  }) async {
+    await repository.uploadPaymentQR(
+      restaurantId: restaurantId,
+      bytes: bytes,
+      fileName: fileName,
+    );
+
+    await refresh();
+  }
+
+  Future<void> deletePaymentQR({required String restaurantId}) async {
+    await repository.deletePaymentQR(restaurantId: restaurantId);
 
     await refresh();
   }

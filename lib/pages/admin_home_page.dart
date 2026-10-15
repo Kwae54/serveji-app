@@ -13,7 +13,7 @@ class AdminHomePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Servio Admin'),
+        title: const Text('Serveji Admin'),
 
         actions: [
           Padding(

@@ -157,7 +157,7 @@ class RestaurantManagementPage extends ConsumerWidget {
 
                   decoration: const InputDecoration(
                     labelText: 'ชื่อร้าน',
-                    hintText: 'เช่น Servio Cafe',
+                    hintText: 'เช่น Serveji Cafe',
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.storefront),
                   ),
@@ -342,6 +342,10 @@ class _RestaurantCard extends StatelessWidget {
                       if (value == 'image') {
                         _pickRestaurantImage(context);
                       }
+
+                      if (value == 'payment_qr') {
+                        _pickPaymentQR(context);
+                      }
                     },
 
                     itemBuilder: (context) => const [
@@ -363,6 +367,17 @@ class _RestaurantCard extends StatelessWidget {
                             Icon(Icons.image),
                             SizedBox(width: 8),
                             Text('เปลี่ยนรูปร้าน'),
+                          ],
+                        ),
+                      ),
+
+                      PopupMenuItem(
+                        value: 'payment_qr',
+                        child: Row(
+                          children: [
+                            Icon(Icons.qr_code),
+                            SizedBox(width: 8),
+                            Text('QR รับชำระเงิน'),
                           ],
                         ),
                       ),
@@ -584,6 +599,50 @@ class _RestaurantCard extends StatelessWidget {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('อัปโหลดรูปร้านเรียบร้อย')));
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(_getErrorMessage(error))));
+    }
+  }
+
+  Future<void> _pickPaymentQR(BuildContext context) async {
+    final picker = ImagePicker();
+
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 100,
+    );
+
+    if (image == null) {
+      return;
+    }
+
+    final Uint8List bytes = await image.readAsBytes();
+
+    if (!context.mounted) {
+      return;
+    }
+
+    try {
+      await ref
+          .read(restaurantProvider.notifier)
+          .uploadPaymentQR(
+            restaurantId: restaurant.id,
+            bytes: bytes,
+            fileName: image.name,
+          );
+
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('อัปโหลด QR รับชำระเงินเรียบร้อย')),
+      );
     } catch (error) {
       if (!context.mounted) {
         return;

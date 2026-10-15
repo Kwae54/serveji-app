@@ -1,4 +1,4 @@
-# servio_app
+# serveji_app
 
 A new Flutter project.
 

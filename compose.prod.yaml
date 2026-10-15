@@ -1,0 +1,77 @@
+services:
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: serveji-mariadb
+    restart: unless-stopped
+
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${SERVEJI_DB_NAME}
+      MARIADB_USER: ${SERVEJI_DB_USER}
+      MARIADB_PASSWORD: ${SERVEJI_DB_PASSWORD}
+
+    volumes:
+      - ./data/mariadb:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mariadb-admin ping -h localhost -uroot -p${MARIADB_ROOT_PASSWORD} --silent"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+    networks:
+      - serveji-network
+
+
+  api:
+    image: serveji-api:prod
+    container_name: serveji-api
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    volumes:
+      - ./data/uploads:/app/uploads
+
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+    networks:
+      - serveji-network
+
+
+  web:
+    image: serveji-web:prod
+    container_name: serveji-web
+    restart: unless-stopped
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./certbot/www:/var/www/certbot:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /home/ubuntu/serveji/downloads:/var/www/downloads:ro
+
+    depends_on:
+      - api
+
+    networks:
+      - serveji-network
+
+
+networks:
+  serveji-network:
+    name: serveji-network

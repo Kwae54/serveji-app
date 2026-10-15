@@ -211,8 +211,7 @@ class _MenuManagementPageState extends ConsumerState<MenuManagementPage> {
 
           gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
             maxCrossAxisExtent: constraints.maxWidth >= 800 ? 320 : 500,
-
-            mainAxisExtent: 340,
+            mainAxisExtent: 380,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),

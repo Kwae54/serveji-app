@@ -68,6 +68,7 @@ class BillingManagementPage extends ConsumerWidget {
 
                         MaterialPageRoute(
                           builder: (_) => BillPage(
+                            restaurantId: restaurantId,
                             sessionId: sessions[index].sessionId,
                             tableNo: sessions[index].tableNo,
                           ),
@@ -164,10 +165,23 @@ String _errorMessage(Object error) {
   if (error is DioException) {
     final data = error.response?.data;
 
-    if (data is Map && data['message'] != null) {
-      return data['message'].toString();
+    if (data is Map) {
+      if (data['message'] != null) {
+        return data['message'].toString();
+      }
+
+      if (data['error'] != null) {
+        return data['error'].toString();
+      }
     }
+
+    if (error.response?.statusCode != null) {
+      return 'HTTP ${error.response!.statusCode}: '
+          '${error.response?.data}';
+    }
+
+    return error.message ?? 'Network error';
   }
 
-  return 'เกิดข้อผิดพลาด กรุณาลองใหม่';
+  return error.toString();
 }

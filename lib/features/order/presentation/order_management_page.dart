@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../model/restaurant_order.dart';
 import 'order_provider.dart';
+import '../../../core/printing/thermal_print_service.dart';
 
 class OrderManagementPage extends ConsumerStatefulWidget {
   final String restaurantId;
@@ -114,6 +115,7 @@ class _OrderManagementPageState extends ConsumerState<OrderManagementPage> {
                           itemBuilder: (context, index) {
                             return _OrderCard(
                               order: orders[index],
+                              restaurantName: widget.restaurantName,
                               onChanged: refresh,
                             );
                           },
@@ -130,6 +132,7 @@ class _OrderManagementPageState extends ConsumerState<OrderManagementPage> {
                         itemBuilder: (context, index) {
                           return _OrderCard(
                             order: orders[index],
+                            restaurantName: widget.restaurantName,
                             onChanged: refresh,
                           );
                         },
@@ -190,9 +193,14 @@ class _OrderManagementPageState extends ConsumerState<OrderManagementPage> {
 
 class _OrderCard extends ConsumerWidget {
   final RestaurantOrder order;
+  final String restaurantName;
   final VoidCallback onChanged;
 
-  const _OrderCard({required this.order, required this.onChanged});
+  const _OrderCard({
+    required this.order,
+    required this.restaurantName,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -233,6 +241,17 @@ class _OrderCard extends ConsumerWidget {
                       ],
                     ),
                   ),
+
+                  if (order.status != 'CANCELLED')
+                    IconButton(
+                      tooltip: 'พิมพ์ใบครัว',
+                      onPressed: () async {
+                        await _printKitchenOrder(context, ref);
+                      },
+                      icon: const Icon(Icons.print_outlined),
+                    ),
+
+                  const SizedBox(width: 4),
 
                   _StatusBadge(status: order.status),
                 ],
@@ -278,6 +297,35 @@ class _OrderCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _printKitchenOrder(BuildContext context, WidgetRef ref) async {
+    try {
+      // โหลด Order เต็มก่อน
+      // เพราะข้อมูลใน Card อาจไม่มี items ครบ
+      final detail = await ref.read(orderRepositoryProvider).getOrder(order.id);
+
+      await ThermalPrintService.printKitchenOrder(
+        order: detail,
+        restaurantName: restaurantName,
+      );
+
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ส่งใบสั่งอาหารไปยังเครื่องพิมพ์แล้ว')),
+      );
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('พิมพ์ใบครัวไม่สำเร็จ: ${error.toString()}')),
+      );
+    }
   }
 
   Future<void> _updateStatus(

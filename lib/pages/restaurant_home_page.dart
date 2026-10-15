@@ -15,7 +15,7 @@ class RestaurantHomePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Servio'),
+        title: const Text('Serveji'),
         actions: [
           IconButton(
             onPressed: () {

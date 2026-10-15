@@ -37,9 +37,9 @@ class BillingRepository {
     await ApiClient.dio.post(
       '/sessions/$sessionId/discounts',
       data: {
-        'discountName': discountName,
-        'discountType': discountType,
-        'discountValue': discountValue,
+        'name': discountName,
+        'type': discountType,
+        'value': discountValue,
         'promotionCode': promotionCode?.trim().isEmpty == true
             ? null
             : promotionCode?.trim(),
@@ -70,5 +70,42 @@ class BillingRepository {
     );
 
     return Payment.fromJson(response.data['data']);
+  }
+
+  Future<void> createManualOrder({
+    required String restaurantId,
+    required String sessionId,
+    required String name,
+    required int quantity,
+    required int unitPriceSatang,
+    String? note,
+  }) async {
+    await ApiClient.dio.post(
+      '/restaurants/$restaurantId'
+      '/sessions/$sessionId/manual-orders',
+      data: {
+        'customerNote': 'เพิ่มโดยพนักงาน',
+        'items': [
+          {
+            'name': name.trim(),
+            'quantity': quantity,
+            'unitPriceSatang': unitPriceSatang,
+            'note': note?.trim() ?? '',
+          },
+        ],
+      },
+    );
+  }
+
+  Future<void> cancelOrderItem({
+    required String restaurantId,
+    required String orderItemId,
+    required String reason,
+  }) async {
+    final path =
+        '/restaurants/$restaurantId'
+        '/order-items/$orderItemId/cancel';
+
+    await ApiClient.dio.patch(path, data: {'reason': reason.trim()});
   }
 }
