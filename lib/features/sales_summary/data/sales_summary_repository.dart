@@ -45,4 +45,37 @@ class SalesSummaryRepository {
 
     return '${date.year}-$month';
   }
+
+  Future<List<SalesItem>> getItems({
+    required String restaurantId,
+    required String period,
+    required DateTime selectedDate,
+  }) async {
+    final queryParameters = <String, dynamic>{'period': period};
+
+    switch (period) {
+      case 'DAILY':
+        queryParameters['date'] = _formatDate(selectedDate);
+        break;
+
+      case 'MONTHLY':
+        queryParameters['month'] = _formatMonth(selectedDate);
+        break;
+
+      case 'YEARLY':
+        queryParameters['year'] = selectedDate.year.toString();
+        break;
+    }
+
+    final response = await ApiClient.dio.get(
+      '/restaurants/$restaurantId/sales-items',
+      queryParameters: queryParameters,
+    );
+
+    final List data = response.data['data'] ?? [];
+
+    return data
+        .map((e) => SalesItem.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
 }

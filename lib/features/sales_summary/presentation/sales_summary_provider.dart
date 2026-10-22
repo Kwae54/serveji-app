@@ -48,3 +48,14 @@ final salesSummaryProvider = FutureProvider.autoDispose
             selectedDate: query.selectedDate,
           );
     });
+
+final salesItemsProvider = FutureProvider.autoDispose
+    .family<List<SalesItem>, SalesSummaryQuery>((ref, query) {
+      return ref
+          .read(salesSummaryRepositoryProvider)
+          .getItems(
+            restaurantId: query.restaurantId,
+            period: query.period,
+            selectedDate: query.selectedDate,
+          );
+    });

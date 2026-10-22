@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../model/sales_summary.dart';
 import 'sales_summary_provider.dart';
+import 'sales_items_page.dart';
 
 class SalesSummaryPage extends ConsumerStatefulWidget {
   final String restaurantId;
@@ -168,6 +169,25 @@ class _SalesSummaryPageState extends ConsumerState<SalesSummaryPage> {
                   value: '${summary.totalItems}',
                   subtitle: 'รายการ',
                   icon: Icons.restaurant,
+
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SalesItemsPage(
+                          restaurantName: widget.restaurantName,
+
+                          query: SalesSummaryQuery(
+                            restaurantId: widget.restaurantId,
+                            period: period,
+                            selectedDate: selectedDate,
+                          ),
+
+                          periodLabel: _periodLabel(),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             );
@@ -381,6 +401,7 @@ class _SummaryCard extends StatelessWidget {
   final String value;
   final String? subtitle;
   final IconData icon;
+  final VoidCallback? onTap;
 
   const _SummaryCard({
     required this.width,
@@ -388,6 +409,7 @@ class _SummaryCard extends StatelessWidget {
     required this.value,
     required this.icon,
     this.subtitle,
+    this.onTap,
   });
 
   @override
@@ -396,34 +418,41 @@ class _SummaryCard extends StatelessWidget {
       width: width,
       height: 150,
       child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(icon),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(icon),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
-                  ),
-                ],
-              ),
 
-              const Spacer(),
+                    if (onTap != null)
+                      const Icon(Icons.chevron_right, size: 20),
+                  ],
+                ),
 
-              Text(
-                value,
-                style: Theme.of(context).textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
+                const Spacer(),
 
-              if (subtitle != null) Text(subtitle!),
-            ],
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+
+                if (subtitle != null) Text(subtitle!),
+              ],
+            ),
           ),
         ),
       ),

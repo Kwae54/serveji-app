@@ -85,3 +85,23 @@ class SalesTopItem {
     );
   }
 }
+
+class SalesItem {
+  final String name;
+  final int quantity;
+  final int salesSatang;
+
+  const SalesItem({
+    required this.name,
+    required this.quantity,
+    required this.salesSatang,
+  });
+
+  factory SalesItem.fromJson(Map<String, dynamic> json) {
+    return SalesItem(
+      name: json['name'] ?? '',
+      quantity: json['quantity'] ?? 0,
+      salesSatang: json['salesSatang'] ?? 0,
+    );
+  }
+}
